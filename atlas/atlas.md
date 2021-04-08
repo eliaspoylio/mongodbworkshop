@@ -93,9 +93,6 @@ const dbName = 'DATABASE';
 client.connect(function(err) {
   assert.equal(null, err);
   console.debug('Connected successfully to server');
-
-  const db = client.db(dbName);
-
   client.close();
 });
 ```
