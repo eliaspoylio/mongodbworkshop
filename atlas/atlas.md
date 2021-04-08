@@ -43,8 +43,6 @@ Click `Create Cluster` and solve the image captcha.
 
 TODO: security levels
 
-Settings can be changed later so .
-
 ### Connect
 
 Click `Connect` from the cluster dashboard.
@@ -75,10 +73,35 @@ Add username and password to your User. These will be used to connect to the clu
 
 ## Test with NodeJS
 
-`npm install mongodb`
+1. Start a new project:
+`npm init -y`
 
-https://www.npmjs.com/package/mongodb
+2. Install express & mongodb:
+`npm install express mongodb`
 
+3. Create a `server.js` file. Change `USERNAME`, `PASSWORD`, `CLUSTERNAME` and `DATABASE` with your own variables. NOTE!!! Under any circumstances do not write this information to a repo!
+```javascript
+const MongoClient = require('mongodb').MongoClient;
+const assert = require('assert');
+
+const uri = "mongodb+srv://USERNAME:PASSWORD@CLUSTERNAME.trcnp.mongodb.net/DATABASE?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Database Name
+const dbName = 'DATABASE';
+// Use connect method to connect to the server
+client.connect(function(err) {
+  assert.equal(null, err);
+  console.debug('Connected successfully to server');
+
+  const db = client.db(dbName);
+
+  client.close();
+});
+```
+
+4. Test the connection. In terminal:
 `node test.js`
 
+And output should be:
 `Connected successfully to server`
