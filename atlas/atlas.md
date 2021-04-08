@@ -79,7 +79,7 @@ Add username and password to your User. These will be used to connect to the clu
 2. Install mongodb:
 `npm install mongodb`
 
-3. Create a `server.js` file. Change `USERNAME`, `PASSWORD`, `CLUSTERNAME` and `DATABASE` with your own variables. NOTE!!! Under any circumstances do not write this information to a repo!
+3. Create a `test.js` file. Change `USERNAME`, `PASSWORD`, `CLUSTERNAME` and `DATABASE` with your own variables. NOTE!!! Under any circumstances do not write this information to a repo!
 ```javascript
 const MongoClient = require('mongodb').MongoClient;
 
@@ -100,3 +100,130 @@ client.connect(err => {
 
 And output should be:
 `Connected successfully to server`
+
+
+## Mongoose & Express
+
+1. Install Mongoose & Express
+`npm install mongoose express --save`
+
+2. Create `server.js` file:
+```javascript
+const express = require("express");
+const app = express();
+const router = express.Router();
+const port = 4000;
+
+const mongoose = require("mongoose");
+
+const uri = "mongodb+srv://USERNAME:PASSWORD@CLUSTERNAME.trcnp.mongodb.net/DATABASE?retryWrites=true&w=majority";
+
+mongoose.connect(uri, { useUnifiedTopology: true, useNewUrlParser: true });
+
+const connection = mongoose.connection;
+
+connection.once("open", function() {
+  console.log("MongoDB database connection established successfully");
+});
+
+app.use("/", router);
+
+app.listen(port, function() {
+  console.log("Server is running on Port: " + port);
+});
+```
+Type `node server.js` and verify that console logs: 
+```
+Server is running on Port: 4000
+MongoDB database connection established successfully
+```
+Use Ctrl + C to kill the the server.
+
+3. Create `model.js` file:
+```javascript
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+let cat = new Schema(
+  {
+    name: {
+      type: String
+    },
+    age: {
+      type: Number
+    },
+  },
+  { collection: "cats" }
+);
+
+module.exports = mongoose.model("cats", cat);
+```
+4. Modify `server.js` file:
+```javascript
+const express = require("express");
+const app = express();
+const router = express.Router();
+const port = 4000;
+
+const mongoose = require("mongoose");
+const cats = require("./model");
+
+var data = [
+  {
+    name: "Kissu",
+    age: 2,
+  },
+  {
+    name: "Missu",
+    age: 7,
+  },
+  {
+    name: "Lissu",
+    age: 3,
+  }
+];
+
+const uri = "mongodb+srv://USERNAME:PASSWORD@CLUSTERNAME.trcnp.mongodb.net/DATABASE?retryWrites=true&w=majority";
+
+mongoose.connect(uri, { useUnifiedTopology: true, useNewUrlParser: true });
+
+const connection = mongoose.connection;
+
+connection.once("open", function () {
+    console.log("MongoDB database connection established successfully");
+});
+
+app.use("/", router);
+
+router.route("/insert").get(function (req, res) {
+    cats.insertMany(data, function (err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(result);
+        }
+    });
+});
+
+
+
+router.route("/find").get(function (req, res) {
+    cats.find({}, function (err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(result);
+        }
+    });
+});
+
+app.listen(port, function () {
+    console.log("Server is running on Port: " + port);
+});
+```
+
+5. Start the server again and test the routes from browser.
+
+http://localhost:4000/find should be empty.
+
+When you go to http://localhost:4000/insert and back to "find" again you should see the inserted data fetched from the database. You can alos verify this from the MongoDB Atlas dashboard.
